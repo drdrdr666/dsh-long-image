@@ -1,6 +1,6 @@
 {
   "name": "dsh-long-image",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "长图阅读器：把超长截图按空白行切成模型能 1:1 看懂的几片，一次调用读完，不截断任何一行文字",
   "private": false,
   "type": "module",

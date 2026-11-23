@@ -35,14 +35,13 @@ maxTileHeight = max(240, cellsTall * 42)
 
 ## 安装
 
+还没发布到 npm，直接从仓库装。
+
 ```bash
 # 在 dsh profile 目录里
-pnpm add dsh-long-image
-```
+pnpm add git+https://github.com/drdrdr666/dsh-long-image.git
 
-开发时可以 link 本地目录：
-
-```bash
+# 开发时 link 本地目录
 pnpm add link:C:/path/to/dsh-long-image
 ```
 
@@ -94,13 +93,15 @@ pnpm add link:C:/path/to/dsh-long-image
 ## 开发
 
 ```bash
-node tests/make-fixtures.py   # 重新生成超长 PNG/JPEG 测试图
-node tests/run.mjs            # 16 项检查：解码、墨迹剖面、切口安全性、切片
+python tests/make-fixtures.py   # 需要 Python 3 + Pillow；测试图不入库
+node tests/run.mjs              # 16 项检查：解码、墨迹剖面、切口安全性、切片
 ```
 
 测试直接断言最关键的不变量：**每个切口所在行必须是安静行**（浅色与深色主题各测一遍），且每一片都不超高度预算。
 
 ## 说明
+
+`0.2.2` 修好了**基线 JPEG 解码**。此前把熵编码数据的范围错传成 SOS 段结束，位读取器在第一个块就"读完"了，于是每个块都解出同样的假系数，整张图退化成 **8 像素周期的灰噪点**——而基于墨迹比例的切口安全检查还会照样报"全部落在空白行"。现在测试直接断言真实的明暗像素占比与行内容多样性，这类退化不可能再悄悄通过。
 
 从 `0.2.1` 起，工具返回**完整的附件引用**（`attachmentId` + `mediaType` / `width` / `height` / `bytes` / `name`）。更早的版本只回传 id，宿主在下一轮请求时无法还原图片元数据，导致该会话此后每一轮都报 `DeepSeek Messages transport failed`。如果你有 `0.2.0` 写坏的会话，需要重建那些图片块或丢弃对应轮次。
 

@@ -88,10 +88,46 @@ console.log('\n[3] baseline JPEG decode');
     const raw = decodeJpeg(jpg);
     assert.equal(raw.components, 3);
     assert.equal(raw.planes.length, 3);
+
+    // 解码结果必须真的是白底黑字。曾经因为熵数据范围传成了 SOS 段结束，
+    // 位流一开局就"读完"，每个块解出同样的假系数，整图退化成 8px 周期的灰噪点，
+    // 而按墨迹比例做的安全检查却依然报"切口全在空白行"。
+    let dark = 0;
+    let light = 0;
+    let total = 0;
+    for (let y = 0; y < img.height; y += 7) {
+        const row = img.rowLuma(y);
+        for (let x = 0; x < img.width; x += 5) {
+            const v = row[x];
+            total++;
+            if (v < 80) dark++;
+            if (v > 200) light++;
+        }
+    }
+    const darkShare = dark / total;
+    const lightShare = light / total;
+    assert.ok(lightShare > 0.6, `JPEG 纸面（亮部）占比只有 ${(lightShare * 100).toFixed(1)}% —— 解码退化`);
+    assert.ok(darkShare > 0.02, `JPEG 文字（暗部）占比只有 ${(darkShare * 100).toFixed(1)}% —— 解码退化`);
+
+    // 位流不推进时，整图会被同一个 8×8 块平铺：大量行内容一模一样。
+    // 正常文字页每隔几十像素就会换行文字，行指纹几乎全不相同。
+    const rowFingerprints = new Set();
+    let sampled = 0;
+    for (let y = 0; y < img.height; y += 97) {
+        rowFingerprints.add(Array.from(img.rowLuma(y).slice(0, 256)).join(','));
+        sampled++;
+    }
+    assert.ok(
+        rowFingerprints.size > sampled * 0.5,
+        `JPEG 行内容重复率过高（${rowFingerprints.size}/${sampled} 唯一）—— 整图疑似被平铺`,
+    );
+
     const profile = inkProfile(img);
     const share = quietShare(profile);
     assert.ok(share > 0.05, 'too few blank rows detected in JPEG: ' + share);
-    ok('decode 1080x9000 baseline JPEG', `blank rows ${(share * 100).toFixed(1)}%`);
+    assert.ok(share < 0.65, `JPEG 空白行占比 ${(share * 100).toFixed(1)}% 异常偏高 —— 解码退化`);
+    ok('decode 1080x9000 baseline JPEG',
+        `blank rows ${(share * 100).toFixed(1)}%, dark ${(darkShare * 100).toFixed(1)}%, light ${(lightShare * 100).toFixed(1)}%`);
 }
 
 console.log('\n[4] plan: cuts never touch a text row (PNG)');

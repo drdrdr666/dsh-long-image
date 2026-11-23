@@ -35,14 +35,13 @@ For a 1080 px-wide page that is 1548 px per tile. `maxTileHeight()` in `lib/geom
 
 ## Install
 
+Not on npm yet — install straight from this repository.
+
 ```bash
 # inside your dsh profile directory
-pnpm add dsh-long-image
-```
+pnpm add git+https://github.com/drdrdr666/dsh-long-image.git
 
-or link a checkout while developing:
-
-```bash
+# or link a local checkout while developing
 pnpm add link:C:/path/to/dsh-long-image
 ```
 
@@ -94,13 +93,15 @@ Limits: 120 Mpx and 80 MB per file, both overridable.
 ## Development
 
 ```bash
-node tests/make-fixtures.py   # regenerate the long PNG/JPEG fixtures
-node tests/run.mjs            # 16 checks: decode, ink profile, cut safety, tiling
+python tests/make-fixtures.py   # needs Python 3 + Pillow; fixtures are git-ignored
+node tests/run.mjs              # 16 checks: decode, ink profile, cut safety, tiling
 ```
 
 The test suite asserts the important invariant directly: **every cut row must be a quiet row**, for both a light theme and a dark theme page, and every tile must stay within the height budget.
 
 ## Notes
+
+`0.2.2` fixes **baseline JPEG decoding**. The entropy-coded segment range used to be passed as the SOS segment end, so the bit reader ran dry at the very first block, every block decoded to the same fake coefficients, and the whole image degenerated into **8-pixel-periodic grey noise** — while the ink-based cut safety check happily reported "all cuts on blank rows". The suite now asserts real dark/light pixel shares plus row variety, so this can never pass silently again.
 
 Since `0.2.1` the tools return **complete attachment references** (`attachmentId` + `mediaType` / `width` / `height` / `bytes` / `name`). Earlier builds returned the id alone, which made the host unable to rebuild the image on the next request — every later turn in that session failed with `DeepSeek Messages transport failed`. If you have a session written by `0.2.0`, recreate the image blocks or drop those turns.
 
