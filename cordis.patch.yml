@@ -1,0 +1,4 @@
+- insert:
+    - id: dsh-long-image
+      name: 'dsh-long-image'
+      config: {}

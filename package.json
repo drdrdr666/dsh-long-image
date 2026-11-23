@@ -1,0 +1,55 @@
+{
+  "name": "dsh-long-image",
+  "version": "0.2.1",
+  "description": "长图阅读器：把超长截图按空白行切成模型能 1:1 看懂的几片，一次调用读完，不截断任何一行文字",
+  "private": false,
+  "type": "module",
+  "main": "./lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./plan": "./lib/plan.js"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh.md",
+    "LICENSE",
+    "icon.svg"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node tests/run.mjs"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "long-screenshot",
+    "image",
+    "vision",
+    "multimodal",
+    "长图"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-tools": ">=0.0.1-rc <2",
+    "cordis": ">=4.0.0-rc <5"
+  },
+  "peerDependenciesMeta": {
+    "cordis": {
+      "optional": true
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/drdrdr666/dsh-long-image.git"
+  },
+  "author": "drdrdr666",
+  "license": "MIT"
+}
