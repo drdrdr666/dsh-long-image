@@ -1,0 +1,11 @@
+node_modules/
+*.log
+
+# generated test fixtures (regenerate with tests/make-fixtures.py)
+tests/fixtures/*.png
+tests/fixtures/*.jpg
+tests/fixtures/*.jpeg
+!tests/fixtures/*.json
+
+.DS_Store
+Thumbs.db
